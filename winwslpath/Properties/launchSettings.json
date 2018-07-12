@@ -1,8 +1,7 @@
 {
   "profiles": {
     "winwslpath": {
-      "commandName": "Project",
-      "commandLineArgs": "-h"
+      "commandName": "Project"
     }
   }
 }
