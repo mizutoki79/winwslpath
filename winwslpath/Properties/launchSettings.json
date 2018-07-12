@@ -2,7 +2,7 @@
   "profiles": {
     "winwslpath": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\path\\to\\Sample"
+      "commandLineArgs": "-h"
     }
   }
 }
