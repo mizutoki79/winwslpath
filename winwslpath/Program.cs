@@ -10,17 +10,20 @@ namespace winwslpath
             if (i < args.Length)
             {
                 var arg = args.Length > 0 ? args[i] : "/h";
-                if (arg.IndexOf('-') == 0) arg = "/" + arg.Substring(1, arg.Length - 1);
                 switch (arg)
                 {
+                    case "-u":
                     case "/u":
                         // TODO: 分かりやすい Exception
                         var path = args[++i];
                         var newPath = path.Replace('\\', '/');
                         Console.WriteLine(newPath);
                         break;
+                    case "-w":
                     case "/w":
+                    case "-m":
                     case "/m":
+                    case "-h":
                     case "/h":
                     default:
                         Usage();
