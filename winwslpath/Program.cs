@@ -9,7 +9,7 @@ namespace winwslpath
         static void Main(string[] args)
         {
             var i = 0;
-            var isAbsolute = args.Contains("-a") || args.Contains("/a");
+            var isForceAbsolute = args.Contains("-a") || args.Contains("/a");
             var oldPath = "";
             var newPath = "";
             while (i < args.Length)
@@ -25,7 +25,7 @@ namespace winwslpath
                     case "/w":
                         // FIXME: `~` を解決できない
                         oldPath = args[++i];
-                        if (isAbsolute) newPath = Path.GetFullPath(oldPath);
+                        if (isForceAbsolute) newPath = Path.GetFullPath(oldPath);
                         else newPath = oldPath.Replace('/', '\\');
                         Console.WriteLine(newPath);
                         return;
@@ -40,7 +40,7 @@ namespace winwslpath
                     default:
                         // TODO: 分かりやすい Exception
                         oldPath = (arg == "-u" || arg == "/u") ? args[++i] : arg;
-                        if (isAbsolute) oldPath = Path.GetFullPath(oldPath);
+                        if (isForceAbsolute) oldPath = Path.GetFullPath(oldPath);
                         newPath = oldPath.Replace('\\', '/');
                         Console.WriteLine(newPath);
                         return;

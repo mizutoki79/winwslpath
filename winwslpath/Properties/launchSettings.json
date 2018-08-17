@@ -1,7 +1,8 @@
 {
   "profiles": {
     "winwslpath": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "/u ..\\.\\winwslpath\\.\\obj\\"
     }
   }
 }
