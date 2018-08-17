@@ -8,11 +8,6 @@ namespace winwslpath
     {
         static void Main(string[] args)
         {
-            if (args.Length == 0)
-            {
-                Usage();
-                return;
-            }
             var i = 0;
             var isAbsolute = args.Contains("-a") || args.Contains("/a");
             while (i < args.Length)
@@ -38,14 +33,16 @@ namespace winwslpath
                     case "/m":
                     case "-h":
                     case "/h":
+                        ShowUsage();
+                        return;
                     default:
-                        Usage();
                         return;
                 }
             }
+            ShowUsage();
         }
 
-        static void Usage()
+        static void ShowUsage()
         {
             Console.WriteLine("winwslpath usage:\n");
             Console.WriteLine("\t/a\tforce result to absolute path format");
