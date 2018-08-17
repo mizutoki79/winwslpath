@@ -10,6 +10,8 @@ namespace winwslpath
         {
             var i = 0;
             var isAbsolute = args.Contains("-a") || args.Contains("/a");
+            var oldPath = "";
+            var newPath = "";
             while (i < args.Length)
             {
                 var arg = args[i];
@@ -19,14 +21,6 @@ namespace winwslpath
                     case "/a":
                         i++;
                         continue;
-                    case "-u":
-                    case "/u":
-                        // TODO: 分かりやすい Exception
-                        var oldPath = args[++i];
-                        if (isAbsolute) oldPath = Path.GetFullPath(oldPath);
-                        var newPath = oldPath.Replace('\\', '/');
-                        Console.WriteLine(newPath);
-                        return;
                     case "-w":
                     case "/w":
                     case "-m":
@@ -35,7 +29,14 @@ namespace winwslpath
                     case "/h":
                         ShowUsage();
                         return;
+                    case "-u":
+                    case "/u":
                     default:
+                        // TODO: 分かりやすい Exception
+                        oldPath = (arg == "-u" || arg == "/u") ? args[++i] : arg;
+                        if (isAbsolute) oldPath = Path.GetFullPath(oldPath);
+                        newPath = oldPath.Replace('\\', '/');
+                        Console.WriteLine(newPath);
                         return;
                 }
             }
