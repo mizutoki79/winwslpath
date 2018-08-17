@@ -58,17 +58,10 @@ namespace winwslpath
             Console.WriteLine("\t/h\tdisplay usage information");
         }
 
-        static string ConvertWinToWslPath(string winPath, bool isAbsolute = false, bool isNormalized = true)
+        static string ConvertWinToWslPath(string winPath, bool isAbsolute = false)
         {
-            var delimiter = '/';
-            var wslPath = winPath;
-            if (wslPath.IndexOf('~') == 0)
-            {
-                var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                wslPath = wslPath.Replace("~", homeDirectory);
-            }
-            if (isAbsolute) wslPath = Path.GetFullPath(wslPath);
-            else if (isNormalized) wslPath = (new FileInfo(wslPath)).FullName;
+            var delimiter = "/";
+            var wslPath = ConvertWinToWinPath(winPath, delimiter);
             if (Path.IsPathRooted(wslPath))
             {
                 var qualifier = Path.GetPathRoot(wslPath);
@@ -76,8 +69,21 @@ namespace winwslpath
                 var newQualifier = String.Format("{0}mnt{0}{1}{0}", delimiter, qualifier.Split(':').First().ToLower());
                 wslPath = wslPath.Replace(qualifier, newQualifier);
             }
-            wslPath = wslPath.Replace('\\', delimiter);
+            wslPath = wslPath.Replace("\\", delimiter);
             return wslPath;
+        }
+
+        static string ConvertWinToWinPath(string oldPath, string delimiter = "\\", bool isAbsolute = false)
+        {
+            var newPath = oldPath;
+            if (newPath.IndexOf('~') == 0)
+            {
+                var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                newPath = newPath.Replace("~", homeDirectory);
+            }
+            if (isAbsolute) newPath = Path.GetFullPath(newPath);
+            if (delimiter != "\\") newPath.Replace("\\", delimiter);
+            return newPath;
         }
     }
 }
