@@ -48,6 +48,16 @@ namespace winwslpath
             ShowUsage();
         }
 
+        static void ShowUsage()
+        {
+            Console.WriteLine("winwslpath usage:\n");
+            Console.WriteLine("\t/a\tforce result to absolute path format");
+            Console.WriteLine("\t/u\ttranslate from a Windows path to a WSL path (default)");
+            // Console.WriteLine("\t/w\ttranslate from a WSL path to a Windows path");
+            // Console.WriteLine("\t/m\ttranslate from a Windows path to a Windows path, with '/' instead of '\\'");
+            Console.WriteLine("\t/h\tdisplay usage information");
+        }
+
         static string ConvertWinToWslPath(string winPath, bool isAbsolute = false, bool isNormalized = true)
         {
             var delimiter = '/';
@@ -68,16 +78,6 @@ namespace winwslpath
             }
             wslPath = wslPath.Replace('\\', delimiter);
             return wslPath;
-        }
-
-        static void ShowUsage()
-        {
-            Console.WriteLine("winwslpath usage:\n");
-            Console.WriteLine("\t/a\tforce result to absolute path format");
-            Console.WriteLine("\t/u\ttranslate from a Windows path to a WSL path (default)");
-            // Console.WriteLine("\t/w\ttranslate from a WSL path to a Windows path");
-            // Console.WriteLine("\t/m\ttranslate from a Windows path to a Windows path, with '/' instead of '\\'");
-            Console.WriteLine("\t/h\tdisplay usage information");
         }
     }
 }
