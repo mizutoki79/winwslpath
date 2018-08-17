@@ -23,6 +23,12 @@ namespace winwslpath
                         continue;
                     case "-w":
                     case "/w":
+                        // FIXME: `~` を解決できない
+                        oldPath = args[++i];
+                        if (isAbsolute) newPath = Path.GetFullPath(oldPath);
+                        else newPath = oldPath.Replace('/', '\\');
+                        Console.WriteLine(newPath);
+                        return;
                     case "-m":
                     case "/m":
                     case "-h":
