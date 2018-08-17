@@ -9,9 +9,7 @@ namespace winwslpath
         static void Main(string[] args)
         {
             var i = 0;
-            Console.Error.WriteLine(string.Join(" ", args));
             var isAbsolute = args.Contains("-a") || args.Contains("/a");
-            Console.Error.WriteLine(isAbsolute);
             var oldPath = "";
             var newPath = "";
             while (i < args.Length)
@@ -33,6 +31,10 @@ namespace winwslpath
                         return;
                     case "-m":
                     case "/m":
+                        oldPath = args[++i];
+                        newPath = ConvertWinToWinPath(oldPath, "/", isAbsolute);
+                        Console.WriteLine(newPath);
+                        return;
                     case "-h":
                     case "/h":
                         ShowUsage();
@@ -56,7 +58,7 @@ namespace winwslpath
             Console.WriteLine("\t/a\tforce result to absolute path format");
             Console.WriteLine("\t/u\ttranslate from a Windows path to a WSL path (default)");
             // Console.WriteLine("\t/w\ttranslate from a WSL path to a Windows path");
-            // Console.WriteLine("\t/m\ttranslate from a Windows path to a Windows path, with '/' instead of '\\'");
+            Console.WriteLine("\t/m\ttranslate from a Windows path to a Windows path, with '/' instead of '\\'");
             Console.WriteLine("\t/h\tdisplay usage information");
         }
 
@@ -84,7 +86,7 @@ namespace winwslpath
                 newPath = newPath.Replace("~", homeDirectory);
             }
             if (isAbsolute) newPath = Path.GetFullPath(newPath);
-            if (delimiter != "\\") newPath.Replace("\\", delimiter);
+            if (delimiter != "\\") newPath = newPath.Replace("\\", delimiter);
             return newPath;
         }
     }
