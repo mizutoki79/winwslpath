@@ -15,6 +15,7 @@ namespace winwslpath
             while (i < args.Length)
             {
                 var arg = args[i];
+                // TODO: args[++i] が Exception 投げる場合の処理
                 switch (arg)
                 {
                     case "-a":
@@ -25,14 +26,13 @@ namespace winwslpath
                     case "/w":
                         // FIXME: `~` を解決できない
                         oldPath = args[++i];
-                        if (isAbsolute) newPath = Path.GetFullPath(oldPath);
-                        else newPath = oldPath.Replace('/', '\\');
+                        newPath = ConvertWslToWinPath(oldPath, isAbsolute);
                         Console.WriteLine(newPath);
                         return;
                     case "-m":
                     case "/m":
                         oldPath = args[++i];
-                        newPath = ConvertWinToWinPath(oldPath, "/", isAbsolute);
+                        newPath = ConvertWinToWinPath(oldPath, isAbsolute, "/");
                         Console.WriteLine(newPath);
                         return;
                     case "-h":
@@ -42,7 +42,6 @@ namespace winwslpath
                     case "-u":
                     case "/u":
                     default:
-                        // TODO: 分かりやすい Exception を投げる
                         oldPath = (arg == "-u" || arg == "/u") ? args[++i] : arg;
                         newPath = ConvertWinToWslPath(oldPath, isAbsolute);
                         Console.WriteLine(newPath);
@@ -57,7 +56,8 @@ namespace winwslpath
             Console.WriteLine("winwslpath usage:\n");
             Console.WriteLine("\t/a\tforce result to absolute path format");
             Console.WriteLine("\t/u\ttranslate from a Windows path to a WSL path (default)");
-            // Console.WriteLine("\t/w\ttranslate from a WSL path to a Windows path");
+            Console.WriteLine("\t/w\ttranslate from a WSL path to a Windows path");
+            // TODO: `/w` と `/m` を併用できるようにする
             Console.WriteLine("\t/m\ttranslate from a Windows path to a Windows path, with '/' instead of '\\'");
             Console.WriteLine("\t/h\tdisplay usage information");
         }
@@ -65,11 +65,10 @@ namespace winwslpath
         static string ConvertWinToWslPath(string winPath, bool isAbsolute = false)
         {
             var delimiter = "/";
-            var wslPath = ConvertWinToWinPath(winPath, delimiter, isAbsolute);
+            var wslPath = ConvertWinToWinPath(winPath, isAbsolute, delimiter);
             if (Path.IsPathRooted(wslPath))
             {
                 var qualifier = Path.GetPathRoot(wslPath);
-                // TODO: こんな愚直で良いものか？
                 var newQualifier = String.Format("{0}mnt{0}{1}{0}", delimiter, qualifier.Split(':').First().ToLower());
                 wslPath = wslPath.Replace(qualifier, newQualifier);
             }
@@ -77,7 +76,21 @@ namespace winwslpath
             return wslPath;
         }
 
-        static string ConvertWinToWinPath(string oldPath, string delimiter = "\\", bool isAbsolute = false)
+        static string ConvertWslToWinPath(string wslPath, bool isAbsolute = false, string delimiter = "\\")
+        {
+            var winPath = wslPath;
+            var mountRoot = "/mnt/";
+            if (winPath.IndexOf(mountRoot) == 0)
+            {
+                winPath = winPath.Substring(mountRoot.Length);
+                var wslQualifier = winPath.Substring(0, winPath.IndexOf('/'));
+                var winQualifier = $"{wslQualifier.ToUpper()}:";
+                winPath = winPath.Replace(wslQualifier, winQualifier);
+            }
+            return ConvertWinToWinPath(winPath, isAbsolute, delimiter, "/");
+        }
+
+        static string ConvertWinToWinPath(string oldPath, bool isAbsolute = false, string delimiter = "\\", string oldDelimiter = "\\")
         {
             var newPath = oldPath;
             if (newPath.IndexOf('~') == 0)
@@ -86,7 +99,7 @@ namespace winwslpath
                 newPath = newPath.Replace("~", homeDirectory);
             }
             if (isAbsolute) newPath = Path.GetFullPath(newPath);
-            if (delimiter != "\\") newPath = newPath.Replace("\\", delimiter);
+            if (delimiter != "\\") newPath = newPath.Replace(oldDelimiter, delimiter);
             return newPath;
         }
     }
