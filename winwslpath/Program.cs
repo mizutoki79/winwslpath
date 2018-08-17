@@ -9,7 +9,9 @@ namespace winwslpath
         static void Main(string[] args)
         {
             var i = 0;
+            Console.Error.WriteLine(string.Join(" ", args));
             var isAbsolute = args.Contains("-a") || args.Contains("/a");
+            Console.Error.WriteLine(isAbsolute);
             var oldPath = "";
             var newPath = "";
             while (i < args.Length)
@@ -61,7 +63,7 @@ namespace winwslpath
         static string ConvertWinToWslPath(string winPath, bool isAbsolute = false)
         {
             var delimiter = "/";
-            var wslPath = ConvertWinToWinPath(winPath, delimiter);
+            var wslPath = ConvertWinToWinPath(winPath, delimiter, isAbsolute);
             if (Path.IsPathRooted(wslPath))
             {
                 var qualifier = Path.GetPathRoot(wslPath);
