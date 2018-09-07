@@ -44,6 +44,11 @@ namespace winwslpath
                         case "/u":
                         default:
                             oldPath = (arg == "-u" || arg == "/u") ? args[++i] : arg;
+                            if(oldPath.IndexOf('-') == 0)
+                            {
+                                ShowInvalidArgsError();
+                                return;
+                            }
                             newPath = ConvertWinToWslPath(oldPath, isAbsolute);
                             Console.WriteLine(newPath);
                             return;
@@ -51,8 +56,7 @@ namespace winwslpath
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    Console.Error.WriteLine("winwslpath: Invalid argument.");
-                    ShowUsage();
+                    ShowInvalidArgsError();
                     return;
                 }
             }
@@ -109,6 +113,12 @@ namespace winwslpath
             if (isAbsolute) newPath = Path.GetFullPath(newPath);
             if (delimiter != "\\") newPath = newPath.Replace(oldDelimiter, delimiter);
             return newPath;
+        }
+
+        static void ShowInvalidArgsError()
+        {
+            Console.Error.WriteLine("winwslpath: Invalid argument.");
+            ShowUsage();
         }
     }
 }
