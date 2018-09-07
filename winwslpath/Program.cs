@@ -26,7 +26,7 @@ namespace winwslpath
                             continue;
                         case "-w":
                         case "/w":
-                            // TODO: `~` を解決できない。Windows' home or WSL's one?
+                            // TODO: `~` をいずれの場合も Windows のホームに変換してしまう。そのままにする選択肢があった方が良いかも。
                             oldPath = args[++i];
                             newPath = ConvertWslToWinPath(oldPath, isAbsolute);
                             Console.WriteLine(newPath);
@@ -75,7 +75,7 @@ namespace winwslpath
             var wslPath = ConvertWinToWinPath(winPath, isAbsolute, delimiter);
             if (Path.IsPathRooted(wslPath))
             {
-                var qualifier = Path.GetPathRoot(wslPath);
+                var qualifier = Path.GetPathRoot(wslPath).Trim('/').Trim('\\');
                 var newQualifier = String.Format("{0}mnt{0}{1}{0}", delimiter, qualifier.Split(':').First().ToLower());
                 wslPath = wslPath.Replace(qualifier, newQualifier);
             }
@@ -106,7 +106,7 @@ namespace winwslpath
                 newPath = newPath.Replace("~", homeDirectory);
             }
             if (isAbsolute) newPath = Path.GetFullPath(newPath);
-            if (delimiter != "\\") newPath = newPath.Replace(oldDelimiter, delimiter);
+            if (delimiter != oldDelimiter) newPath = newPath.Replace(oldDelimiter, delimiter);
             return newPath;
         }
     }
