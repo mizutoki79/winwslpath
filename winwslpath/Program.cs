@@ -13,6 +13,7 @@ namespace winwslpath
             var oldPath = "";
             var newPath = "";
             // TODO: 現状ループすることは a を除いて無い。同時に使えない・不必要に多い引数に対してエクセプションを投げる
+            // TODO: `~` をWindowsあるいはWSLのホームに変換する選択肢
             while (i < args.Length)
             {
                 var arg = args[i];
@@ -26,7 +27,6 @@ namespace winwslpath
                             continue;
                         case "-w":
                         case "/w":
-                            // TODO: `~` をいずれの場合も Windows のホームに変換してしまう。そのままにする選択肢があった方が良いかも。
                             oldPath = args[++i];
                             newPath = ConvertWslToWinPath(oldPath, isAbsolute);
                             Console.WriteLine(newPath);
@@ -76,7 +76,7 @@ namespace winwslpath
             if (Path.IsPathRooted(wslPath))
             {
                 var qualifier = Path.GetPathRoot(wslPath).Trim('/').Trim('\\');
-                var newQualifier = String.Format("{0}mnt{0}{1}{0}", delimiter, qualifier.Split(':').First().ToLower());
+                var newQualifier = String.Format("{0}mnt{0}{1}", delimiter, qualifier.Split(':').First().ToLower());
                 wslPath = wslPath.Replace(qualifier, newQualifier);
             }
             wslPath = wslPath.Replace("\\", delimiter);
@@ -97,10 +97,10 @@ namespace winwslpath
             return ConvertWinToWinPath(winPath, isAbsolute, delimiter, "/");
         }
 
-        static string ConvertWinToWinPath(string oldPath, bool isAbsolute = false, string delimiter = "\\", string oldDelimiter = "\\")
+        static string ConvertWinToWinPath(string oldPath, bool isAbsolute = false, string delimiter = "\\", string oldDelimiter = "\\", bool isResolvedHome = false)
         {
             var newPath = oldPath;
-            if (newPath.IndexOf('~') == 0)
+            if (isResolvedHome && newPath.IndexOf('~') == 0)
             {
                 var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                 newPath = newPath.Replace("~", homeDirectory);
