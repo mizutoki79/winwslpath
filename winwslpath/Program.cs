@@ -12,6 +12,7 @@ namespace winwslpath
             var isAbsolute = args.Contains("-a") || args.Contains("/a");
             var oldPath = "";
             var newPath = "";
+            // TODO: 現状ループすることは a を除いて無い。同時に使えない・不必要に多い引数に対してエクセプションを投げる
             while (i < args.Length)
             {
                 var arg = args[i];
@@ -44,20 +45,14 @@ namespace winwslpath
                         case "/u":
                         default:
                             oldPath = (arg == "-u" || arg == "/u") ? args[++i] : arg;
-                            if(oldPath.IndexOf('-') == 0)
-                            {
-                                ShowInvalidArgsError();
-                                return;
-                            }
                             newPath = ConvertWinToWslPath(oldPath, isAbsolute);
                             Console.WriteLine(newPath);
                             return;
                     }
                 }
-                catch (IndexOutOfRangeException)
+                catch (IndexOutOfRangeException ex)
                 {
-                    ShowInvalidArgsError();
-                    return;
+                    throw new ArgumentException("Path must be specify", ex);
                 }
             }
             ShowUsage();
@@ -113,12 +108,6 @@ namespace winwslpath
             if (isAbsolute) newPath = Path.GetFullPath(newPath);
             if (delimiter != "\\") newPath = newPath.Replace(oldDelimiter, delimiter);
             return newPath;
-        }
-
-        static void ShowInvalidArgsError()
-        {
-            Console.Error.WriteLine("winwslpath: Invalid argument.");
-            ShowUsage();
         }
     }
 }
