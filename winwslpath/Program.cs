@@ -15,37 +15,45 @@ namespace winwslpath
             while (i < args.Length)
             {
                 var arg = args[i];
-                // TODO: args[++i] が Exception 投げる場合の処理
-                switch (arg)
+                try
                 {
-                    case "-a":
-                    case "/a":
-                        i++;
-                        continue;
-                    case "-w":
-                    case "/w":
-                        // FIXME: `~` を解決できない
-                        oldPath = args[++i];
-                        newPath = ConvertWslToWinPath(oldPath, isAbsolute);
-                        Console.WriteLine(newPath);
-                        return;
-                    case "-m":
-                    case "/m":
-                        oldPath = args[++i];
-                        newPath = ConvertWinToWinPath(oldPath, isAbsolute, "/");
-                        Console.WriteLine(newPath);
-                        return;
-                    case "-h":
-                    case "/h":
-                        ShowUsage();
-                        return;
-                    case "-u":
-                    case "/u":
-                    default:
-                        oldPath = (arg == "-u" || arg == "/u") ? args[++i] : arg;
-                        newPath = ConvertWinToWslPath(oldPath, isAbsolute);
-                        Console.WriteLine(newPath);
-                        return;
+                    switch (arg)
+                    {
+                        case "-a":
+                        case "/a":
+                            i++;
+                            continue;
+                        case "-w":
+                        case "/w":
+                            // TODO: `~` を解決できない。Windows' home or WSL's one?
+                            oldPath = args[++i];
+                            newPath = ConvertWslToWinPath(oldPath, isAbsolute);
+                            Console.WriteLine(newPath);
+                            return;
+                        case "-m":
+                        case "/m":
+                            oldPath = args[++i];
+                            newPath = ConvertWinToWinPath(oldPath, isAbsolute, "/");
+                            Console.WriteLine(newPath);
+                            return;
+                        case "-h":
+                        case "/h":
+                            ShowUsage();
+                            return;
+                        case "-u":
+                        case "/u":
+                        default:
+                            oldPath = (arg == "-u" || arg == "/u") ? args[++i] : arg;
+                            newPath = ConvertWinToWslPath(oldPath, isAbsolute);
+                            Console.WriteLine(newPath);
+                            return;
+                    }
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    Console.Error.WriteLine("winwslpath: Invalid argument.");
+                    ShowUsage();
+                    return;
                 }
             }
             ShowUsage();
