@@ -8,54 +8,83 @@ namespace winwslpath
     {
         static void Main(string[] args)
         {
-            var i = 0;
-            var isAbsolute = args.Contains("-a") || args.Contains("/a");
-            var oldPath = "";
-            var newPath = "";
-            // TODO: 現状ループすることは a を除いて無い。同時に使えない・不必要に多い引数に対してエクセプションを投げる
-            // TODO: `~` をWindowsあるいはWSLのホームに変換する選択肢
-            while (i < args.Length)
+            // TODO: エラーメッセージを分かりやすくする。
+            try
             {
-                var arg = args[i];
-                try
+                if (args.Length == 0)
                 {
+                    ShowUsage();
+                    return;
+                }
+                var i = 0;
+                var oldPath = string.Empty;
+                var newPath = string.Empty;
+                // TODO: `~` をWindowsあるいはWSLのホームに変換する選択肢
+                var acceptOption = true;
+                var isAbsolute = false;
+                char? mode = null;
+                while (i < args.Length)
+                {
+                    var arg = args[i];
                     switch (arg)
                     {
                         case "-a":
                         case "/a":
-                            i++;
-                            continue;
-                        case "-w":
-                        case "/w":
-                            oldPath = args[++i];
-                            newPath = ConvertWslToWinPath(oldPath, isAbsolute);
-                            Console.WriteLine(newPath);
-                            return;
-                        case "-m":
-                        case "/m":
-                            oldPath = args[++i];
-                            newPath = ConvertWinToWinPath(oldPath, isAbsolute, "/");
-                            Console.WriteLine(newPath);
-                            return;
-                        case "-h":
-                        case "/h":
-                            ShowUsage();
-                            return;
+                            if (!acceptOption) throw new ArgumentException($"winwslpath: Invalid argument ({arg})");
+                            isAbsolute = true;
+                            break;
                         case "-u":
                         case "/u":
-                        default:
-                            oldPath = (arg == "-u" || arg == "/u") ? args[++i] : arg;
-                            newPath = ConvertWinToWslPath(oldPath, isAbsolute);
-                            Console.WriteLine(newPath);
+                            if (!acceptOption || !string.IsNullOrEmpty(oldPath)) throw new ArgumentException($"winwslpath: Invalid argument ({arg})");
+                            mode = 'u';
+                            acceptOption = false;
+                            break;
+                        case "-w":
+                        case "/w":
+                            if (!acceptOption || !string.IsNullOrEmpty(oldPath)) throw new ArgumentException($"winwslpath: Invalid argument ({arg})");
+                            mode = 'w';
+                            acceptOption = false;
+                            break;
+                        case "-m":
+                        case "/m":
+                            if (!acceptOption || !string.IsNullOrEmpty(oldPath)) throw new ArgumentException($"winwslpath: Invalid argument ({arg})");
+                            mode = 'm';
+                            acceptOption = false;
+                            break;
+                        case "-h":
+                        case "/h":
+                            if (!acceptOption || args.Length != 1) throw new ArgumentException($"winwslpath: Invalid argument ({arg})");
+                            ShowUsage();
                             return;
+                        default:
+                            if (!string.IsNullOrEmpty(oldPath)) throw new ArgumentException($"winwslpath: Invalid argument ({arg})");
+                            mode = mode ?? 'u';
+                            oldPath = arg;
+                            acceptOption = true;
+                            break;
                     }
+                    i++;
                 }
-                catch (IndexOutOfRangeException ex)
+
+                if (mode == null) throw new ArgumentException("winwslpath: Invalid argument");
+                if (string.IsNullOrEmpty(oldPath)) throw new ArgumentException("winwslpath: you must specify a path");
+                switch (mode)
                 {
-                    throw new ArgumentException("Path must be specify", ex);
+                    case 'u':
+                        newPath = ConvertWinToWslPath(oldPath, isAbsolute);
+                        break;
+                    case 'w':
+                        newPath = ConvertWslToWinPath(oldPath, isAbsolute);
+                        break;
+                    case 'm':
+                        newPath = ConvertWinToWinPath(oldPath, isAbsolute, "/");
+                        break;
                 }
+                Console.WriteLine(newPath);
+            }catch(ArgumentException ex)
+            {
+                Console.Error.WriteLine(ex.Message);
             }
-            ShowUsage();
         }
 
         static void ShowUsage()
@@ -64,7 +93,6 @@ namespace winwslpath
             Console.WriteLine("\t/a\tforce result to absolute path format");
             Console.WriteLine("\t/u\ttranslate from a Windows path to a WSL path (default)");
             Console.WriteLine("\t/w\ttranslate from a WSL path to a Windows path");
-            // TODO: `/w` と `/m` を併用できるようにする
             Console.WriteLine("\t/m\ttranslate from a Windows path to a Windows path, with '/' instead of '\\'");
             Console.WriteLine("\t/h\tdisplay usage information");
         }
